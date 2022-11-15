@@ -75,6 +75,19 @@ public class ProfileRestController {
     }
 
     /**
+     * Создать нового пользователя.
+     *
+     * @param resource - профиль пользователя
+     * @return - идентификатор созданного пользователя
+     */
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<byte[]> create(@RequestBody Profile resource) {
+        log.info(String.format("Create new profile method(ChatId: %s).", resource.getChatId()));
+        return getResponseEntity(rowProfile.create(resource));
+    }
+
+    /**
      * Получить пользователя по идентификатору.
      *
      * @param id - идентификатор для поиска профиля
@@ -83,23 +96,8 @@ public class ProfileRestController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<byte[]> getByChatId(@PathVariable Long id) {
         log.info(String.format("Find by chatId(%s) method.", id));
-        Profile profile = rowProfile.getProfileById(id);
-        String responseText = MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
-        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
-        return feignTextToImg.getImg(descriptionOnOldRussian);
-    }
 
-    /**
-     * Создать нового пользователя.
-     *
-     * @param resource - профиль пользователя
-     * @return - идентификатор созданного пользователя
-     */
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Long create(@RequestBody Profile resource) {
-        log.info(String.format("Create new profile method(ChatId: %s).", resource.getChatId()));
-        return rowProfile.create(resource);
+        return getResponseEntity(id);
     }
 
     /**
@@ -110,9 +108,17 @@ public class ProfileRestController {
      */
     @GetMapping(value = "/search/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getSearchById(@PathVariable Long id) {
-        Profile profile = rowProfile.getSearchById(id);
-        log.info(String.format("Get search id for %s.Next searched id is:%s", id, profile.getChatId()));
-        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(profile.getDescription());
+        Long searchId = rowProfile.getSearchId(id);
+        log.info(String.format("Get search id for %s.Next searched id is:%s", id, searchId));
+
+        rowProfile.incrementSearchId(id);
+        return getResponseEntity(searchId);
+    }
+
+    private ResponseEntity<byte[]> getResponseEntity(@PathVariable Long id) {
+        Profile profile = rowProfile.getProfileById(id);
+        String responseText = MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
+        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
         return feignTextToImg.getImg(descriptionOnOldRussian);
     }
 
@@ -127,8 +133,8 @@ public class ProfileRestController {
     public ResponseEntity<byte[]> likeByChatId(@PathVariable Long id) {
         Long searchId = rowProfile.getSearchId(id);
         log.info(String.format("Like(%s) by chat id(%s)", searchId, id));
-        LoveRelation loveRelation = new LoveRelation(id, searchId);
-        rowLoveRelation.addLoveData(loveRelation);
+
+        rowLoveRelation.addLoveData(new LoveRelation(id, searchId));
         return getSearchById(id);
     }
 

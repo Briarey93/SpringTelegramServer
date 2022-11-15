@@ -46,11 +46,6 @@ public class RowProfile {
         return rowsProfile.get(id).getSearch();
     }
 
-    public Profile getSearchById(Long id) {
-        incrementSearchId(id);
-        return getProfileById(getSearchId(id));
-    }
-
     public void incrementSearchId(Long id) {
         List<Object> Ids = Arrays.stream(rowsProfile.keySet().toArray()).toList();
         Long currentSearchId = getSearchId(id);
