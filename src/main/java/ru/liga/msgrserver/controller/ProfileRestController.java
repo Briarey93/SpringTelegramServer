@@ -115,13 +115,6 @@ public class ProfileRestController {
         return getResponseEntity(searchId);
     }
 
-    private ResponseEntity<byte[]> getResponseEntity(@PathVariable Long id) {
-        Profile profile = rowProfile.getProfileById(id);
-        String responseText = MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
-        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
-        return feignTextToImg.getImg(descriptionOnOldRussian);
-    }
-
     /**
      * Пользователь по идентификационному номеру полюбит другого пользователя, на которого сейчас обращено поле "search"
      * Запрос следующего пользователя к рассмотрению(@see getSearchById).
@@ -138,19 +131,27 @@ public class ProfileRestController {
         return getSearchById(id);
     }
 
-
     @GetMapping(value = "/lovers/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getNextLoversById(@PathVariable Long id) {
         log.info(String.format("Get love next by id(%s).", id));
+        Long loversId = rowProfile.incrementedLoversId(id);
 
-        return getResponseEntity(id);
+        return getResponseEntity(loversId);
     }
 
     @GetMapping(value = "/lovers/prev/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getPrevLoversById(@PathVariable Long id) {
         log.info(String.format("Get love prev by id(%s).", id));
+        Long loversId = rowProfile.decrementedLoversId(id);
 
-        return getResponseEntity(id);
+        return getResponseEntity(loversId);
+    }
+
+    private ResponseEntity<byte[]> getResponseEntity(@PathVariable Long id) {
+        Profile profile = rowProfile.getProfileById(id);
+        String responseText = MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
+        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
+        return feignTextToImg.getImg(descriptionOnOldRussian);
     }
 
 //    public ResponseEntity<byte[]> getNextLoversById(@PathVariable Long id) {

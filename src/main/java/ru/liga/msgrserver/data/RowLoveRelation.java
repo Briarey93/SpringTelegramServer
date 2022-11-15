@@ -25,4 +25,13 @@ public class RowLoveRelation {
         }
         rowsLoveRelations.put(count++, loveRelation);
     }
+
+    public Long getNextLoverId(Long id, Long loverId) {
+        rowsLoveRelations.get(id);
+        return id;
+    }
+
+    public Long getPrevLoverId(Long id, Long loverId) {
+        return id;
+    }
 }

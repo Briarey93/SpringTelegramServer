@@ -1,6 +1,7 @@
 package ru.liga.msgrserver.data;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -8,6 +9,11 @@ import java.util.*;
 @Component
 @Data
 public class RowProfile {
+
+    /**
+     * Класс агрегирующий любовные предпочтения пользователей в мапе.
+     */
+    private final RowLoveRelation rowLoveRelation;
 
     private Map<Long, Profile> rowsProfile = new HashMap() {{
         put(0L, new Profile(0L,
@@ -33,6 +39,10 @@ public class RowProfile {
                 0L));
     }};
 
+    public RowProfile(@Autowired RowLoveRelation rowLoveRelation) {
+        this.rowLoveRelation = rowLoveRelation;
+    }
+
     public Long create(Profile resource) {
         rowsProfile.put(resource.getChatId(), resource.clone());
         return resource.getChatId();
@@ -40,10 +50,6 @@ public class RowProfile {
 
     public Profile getProfileById(Long searchId) {
         return rowsProfile.get(searchId);
-    }
-
-    public Long getSearchId(Long id) {
-        return rowsProfile.get(id).getSearch();
     }
 
     public void incrementSearchId(Long id) {
@@ -67,7 +73,27 @@ public class RowProfile {
         rowsProfile.get(id).setSearch(nextSearchId);
     }
 
+    public Long getSearchId(Long id) {
+        return rowsProfile.get(id).getSearch();
+    }
+
+
+
     public Long getLoveId(Long id) {
         return rowsProfile.get(id).getLovers();
+    }
+
+    public Long incrementedLoversId(Long id) {
+        Long loverId = getLoveId(id);
+        loverId = rowLoveRelation.getNextLoverId(id, loverId);
+
+        return getLoveId(id);
+    }
+
+    public Long decrementedLoversId(Long id) {
+        Long loverId = getLoveId(id);
+        loverId = rowLoveRelation.getPrevLoverId(id, loverId);
+
+        return getLoveId(id);
     }
 }
