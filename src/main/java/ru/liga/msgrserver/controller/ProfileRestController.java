@@ -17,6 +17,7 @@ import ru.liga.msgrserver.feign.FeignTranslateToOldRussian;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -69,9 +70,9 @@ public class ProfileRestController {
      * @return - список всех любовных отношений в формате первому понравился второй
      */
     @GetMapping(value = "/relations")
-    public List<LoveRelation> getAllLoveRelations() {
+    public Set<LoveRelation> getAllLoveRelations() {
         log.info("Get all love relations.");
-        return new ArrayList<>(rowLoveRelation.getRowsLoveRelations().values());
+        return rowLoveRelation.getRowsLoveRelations();
     }
 
     /**

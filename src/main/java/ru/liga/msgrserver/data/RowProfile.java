@@ -17,23 +17,23 @@ public class RowProfile {
 
     private Map<Long, Profile> rowsProfile = new HashMap() {{
         put(0L, new Profile(0L,
-                "первый",
-                "-",
-                "тупо текст",
-                "-",
+                "Anton",
+                "Сударь",
+                "первый пользователь",
+                "все",
                 0L,
                 0L));
         put(1L, new Profile(1L,
                 "Dima",
                 "Сударь",
-                "описание анкеты, лол",
+                "Второй пользователь",
                 "Сударыня",
                 0L,
                 0L));
         put(3L, new Profile(3L,
                 "Lena",
                 "Сударыня",
-                "описание анкеты второго пользователя, лол",
+                "третий пользователь",
                 "Сударь",
                 0L,
                 0L));
@@ -77,23 +77,27 @@ public class RowProfile {
         return rowsProfile.get(id).getSearch();
     }
 
-
-
     public Long getLoveId(Long id) {
         return rowsProfile.get(id).getLovers();
+    }
+
+    private void setLoveId(Long id, Long loverId) {
+        getProfileById(id).setLovers(loverId);
     }
 
     public Long incrementedLoversId(Long id) {
         Long loverId = getLoveId(id);
         loverId = rowLoveRelation.getNextLoverId(id, loverId);
+        setLoveId(id, loverId);
 
-        return getLoveId(id);
+        return loverId;
     }
 
     public Long decrementedLoversId(Long id) {
         Long loverId = getLoveId(id);
         loverId = rowLoveRelation.getPrevLoverId(id, loverId);
+        setLoveId(id, loverId);
 
-        return getLoveId(id);
+        return loverId;
     }
 }
