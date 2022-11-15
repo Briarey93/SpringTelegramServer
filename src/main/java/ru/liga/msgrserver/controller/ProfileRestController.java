@@ -83,7 +83,7 @@ public class ProfileRestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<byte[]> create(@RequestBody Profile resource) {
-        log.info(String.format("Create new profile method(ChatId: %s).", resource.getChatId()));
+        log.info(String.format("Create new profile(ChatId: %s).", resource.getChatId()));
         return getResponseEntity(rowProfile.create(resource));
     }
 
@@ -93,9 +93,9 @@ public class ProfileRestController {
      * @param id - идентификатор для поиска профиля
      * @return - возвращает профиль пользователя
      */
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getByChatId(@PathVariable Long id) {
-        log.info(String.format("Find by chatId(%s) method.", id));
+        log.info(String.format("Find by chatId(%s).", id));
 
         return getResponseEntity(id);
     }
@@ -109,7 +109,7 @@ public class ProfileRestController {
     @GetMapping(value = "/search/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getSearchById(@PathVariable Long id) {
         Long searchId = rowProfile.getSearchId(id);
-        log.info(String.format("Get search id for %s.Next searched id is:%s", id, searchId));
+        log.info(String.format("Get search id for %s.Next searched id is:%s.", id, searchId));
 
         rowProfile.incrementSearchId(id);
         return getResponseEntity(searchId);
@@ -132,14 +132,27 @@ public class ProfileRestController {
     @GetMapping(value = "/search/like/{id}")
     public ResponseEntity<byte[]> likeByChatId(@PathVariable Long id) {
         Long searchId = rowProfile.getSearchId(id);
-        log.info(String.format("Like(%s) by chat id(%s)", searchId, id));
+        log.info(String.format("Like(%s) by chat id(%s).", searchId, id));
 
         rowLoveRelation.addLoveData(new LoveRelation(id, searchId));
         return getSearchById(id);
     }
 
 
-//    @GetMapping(value = "/lovers/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/lovers/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getNextLoversById(@PathVariable Long id) {
+        log.info(String.format("Get love next by id(%s).", id));
+
+        return getResponseEntity(id);
+    }
+
+    @GetMapping(value = "/lovers/prev/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getPrevLoversById(@PathVariable Long id) {
+        log.info(String.format("Get love prev by id(%s).", id));
+
+        return getResponseEntity(id);
+    }
+
 //    public ResponseEntity<byte[]> getNextLoversById(@PathVariable Long id) {
 //        log.info(String.format("Get love by id(%s) method", id));
 //        Long loversId = rowProfile.getLoveId(id);
