@@ -109,7 +109,8 @@ public class ProfileRestController {
      */
     @GetMapping(value = "/search/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getSearchById(@PathVariable Long id) {
-        Long searchId = rowProfile.incrementSearchId(id);
+        rowProfile.incrementSearchId(id);
+        Long searchId = rowProfile.getSearchId(id);
         log.info(String.format("Get search id for %s.Next searched id is:%s.", id, searchId));
 
         return getResponseEntity(searchId);
