@@ -73,7 +73,7 @@ public class RowProfile {
         return rowsProfile.get(searchId);
     }
 
-    public void incrementSearchId(Long id) {
+    public Long incrementSearchId(Long id) {
         List<Object> Ids = Arrays.stream(rowsProfile.keySet().toArray()).toList();
         Long currentSearchId = getSearchId(id);
         int index = Ids.indexOf(currentSearchId);

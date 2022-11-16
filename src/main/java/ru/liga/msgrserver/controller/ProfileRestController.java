@@ -109,10 +109,9 @@ public class ProfileRestController {
      */
     @GetMapping(value = "/search/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getSearchById(@PathVariable Long id) {
-        Long searchId = rowProfile.getSearchId(id);
+        Long searchId = rowProfile.incrementSearchId(id);
         log.info(String.format("Get search id for %s.Next searched id is:%s.", id, searchId));
 
-        rowProfile.incrementSearchId(id);
         return getResponseEntity(searchId);
     }
 
@@ -154,25 +153,4 @@ public class ProfileRestController {
         String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
         return feignTextToImg.getImg(descriptionOnOldRussian);
     }
-
-//    public ResponseEntity<byte[]> getNextLoversById(@PathVariable Long id) {
-//        log.info(String.format("Get love by id(%s) method", id));
-//        Long loversId = rowProfile.getLoveId(id);
-////        rowProfile.incrementLoverId(id);
-//
-//        Profile profile = rowProfile.getProfileById(loversId);
-//        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(profile.getDescription());
-//        return feignTextToImg.getImg(descriptionOnOldRussian);
-//    }
-//
-//    @GetMapping(value = "/lovers/prev/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
-//    public ResponseEntity<byte[]> getPrevLoversById(@PathVariable Long id) {
-//        log.info(String.format("Get loved(%s) by id(%s) method", rowProfile.getProfileById(id).getLovers(), id));
-//        Long loversId = rowProfile.getLoveId(id);
-////        rowProfile.decrementLoverId(id);
-//
-//        Profile profile = rowProfile.getProfileById(loversId);
-//        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(profile.getDescription());
-//        return feignTextToImg.getImg(descriptionOnOldRussian);
-//    }
 }
