@@ -85,7 +85,8 @@ public class ProfileRestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<byte[]> create(@RequestBody Profile resource) {
         log.info(String.format("Create new profile(ChatId: %s).", resource.getChatId()));
-        return getResponseEntity(rowProfile.create(resource));
+        Long id = rowProfile.create(resource);
+        return getResponseEntity(id);
     }
 
     /**
@@ -96,7 +97,12 @@ public class ProfileRestController {
      */
     @GetMapping(value = "/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getByChatId(@PathVariable Long id) {
-        log.info(String.format("Find by chatId(%s).", id));
+        if (rowProfile.isIdNotRegistered(id)) {
+            log.info(String.format("User %s doesn't registered, yet.", id));
+            return getResponseEntity("Вы еще не зарегистрированы. Пропишите /start для входа в регистрацию.");
+        }
+
+        log.info(String.format("Find profile by chatId(%s).", id));
 
         return getResponseEntity(id);
     }
@@ -109,8 +115,13 @@ public class ProfileRestController {
      */
     @GetMapping(value = "/search/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getSearchById(@PathVariable Long id) {
-        rowProfile.incrementSearchId(id);
-        Long searchId = rowProfile.getSearchId(id);
+        if (rowProfile.isIdNotRegistered(id)) {
+            log.info(String.format("User %s doesn't registered, yet.", id));
+            return getResponseEntity("Вы еще не зарегистрированы. Пропишите /start для входа в регистрацию.");
+        }
+
+        rowProfile.incrementSearchIdForId(id);
+        Long searchId = rowProfile.getSearchIdById(id);
         log.info(String.format("Get search id for %s.Next searched id is:%s.", id, searchId));
 
         return getResponseEntity(searchId);
@@ -125,7 +136,12 @@ public class ProfileRestController {
      */
     @GetMapping(value = "/search/like/{id}")
     public ResponseEntity<byte[]> likeByChatId(@PathVariable Long id) {
-        Long searchId = rowProfile.getSearchId(id);
+        if (rowProfile.isIdNotRegistered(id)) {
+            log.info(String.format("User %s doesn't registered, yet.", id));
+            return getResponseEntity("Вы еще не зарегистрированы. Пропишите /start для входа в регистрацию.");
+        }
+
+        Long searchId = rowProfile.getSearchIdById(id);
         log.info(String.format("Like(%s) by chat id(%s).", searchId, id));
 
         rowLoveRelation.addLoveData(new LoveRelation(id, searchId));
@@ -134,23 +150,42 @@ public class ProfileRestController {
 
     @GetMapping(value = "/lovers/next/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getNextLoversById(@PathVariable Long id) {
-        log.info(String.format("Get love next by id(%s).", id));
-        Long loversId = rowProfile.incrementedLoversId(id);
+        if (rowProfile.isIdNotRegistered(id)) {
+            log.info(String.format("User %s doesn't registered, yet.", id));
+            return getResponseEntity("Вы еще не зарегистрированы. Пропишите /start для входа в регистрацию.");
+        }
 
-        return getResponseEntity(loversId);
+        Long loversId = rowProfile.incrementedLoversIdForId(id);
+        log.info(String.format("Get love next(%s) by id(%s).", loversId, id));
+
+        String description = rowProfile.getLoversProfileDescription(loversId);
+        return getResponseEntity(description);
     }
 
     @GetMapping(value = "/lovers/prev/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getPrevLoversById(@PathVariable Long id) {
-        log.info(String.format("Get love prev by id(%s).", id));
-        Long loversId = rowProfile.decrementedLoversId(id);
+        if (rowProfile.isIdNotRegistered(id)) {
+            log.info(String.format("User %s doesn't registered, yet.", id));
+            return getResponseEntity("Вы еще не зарегистрированы. Пропишите /start для входа в регистрацию.");
+        }
 
-        return getResponseEntity(loversId);
+        Long loversId = rowProfile.decrementedLoversIdForId(id);
+        log.info(String.format("Get love prev(%s) by id(%s).", loversId, id));
+
+        String description = rowProfile.getLoversProfileDescription(loversId);
+        return getResponseEntity(description);
+    }
+
+    private ResponseEntity<byte[]> getResponseEntity(String responseText) {
+        String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
+        return feignTextToImg.getImg(descriptionOnOldRussian);
     }
 
     private ResponseEntity<byte[]> getResponseEntity(@PathVariable Long id) {
         Profile profile = rowProfile.getProfileById(id);
-        String responseText = MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
+        String responseText;
+
+        responseText = MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
         String descriptionOnOldRussian = feignTranslateToOldRussian.getTranslatedText(responseText);
         return feignTextToImg.getImg(descriptionOnOldRussian);
     }

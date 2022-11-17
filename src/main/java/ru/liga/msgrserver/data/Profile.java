@@ -28,14 +28,6 @@ public class Profile implements Cloneable {
         this.lovers = lovers; //0
     }
 
-    //ChatId - который лайкнул
-    //ChatIdLovers - лайкнутого.
-
-    //List<ChatId> я люблю
-    //List<ChatId> меня любят
-    //List<ChatId> взаимно.
-
-
     public Profile() {
     }
 

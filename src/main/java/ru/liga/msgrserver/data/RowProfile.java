@@ -1,13 +1,19 @@
 package ru.liga.msgrserver.data;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Data
+@Slf4j
 public class RowProfile {
 
     /**
@@ -73,19 +79,45 @@ public class RowProfile {
         return rowsProfile.get(searchId);
     }
 
-    public void incrementSearchId(Long id) {
+    public Long getSearchIdById(Long id) {
+        return rowsProfile.get(id).getSearch();
+    }
+
+    public Long getLoverIdById(Long id) {
+        return rowsProfile.get(id).getLovers();
+    }
+
+
+    public boolean isIdNotRegistered(Long id) {
+        return !rowsProfile.containsKey(id);
+
+    }
+
+    private void setLoverIdById(Long id, Long loverId) {
+        getProfileById(id).setLovers(loverId);
+    }
+
+    public String getLoversProfileDescription(Long loversId) {
+        if (loversId == null) {
+            return "Вы еще не выбрали любимцев. Вернитесь в Меню->Поиск и выберите любимцев.";
+        }
+        Profile profile = getProfileById(loversId);
+        return MessageFormat.format("{0}, {1}.\n {2}", profile.getName(), profile.getGender(), profile.getDescription());
+    }
+
+    public void incrementSearchIdForId(Long id) {
         List<Object> Ids = Arrays.stream(rowsProfile.keySet().toArray()).toList();
-        Long currentSearchId = getSearchId(id);
+        Long currentSearchId = getSearchIdById(id);
         int index = Ids.indexOf(currentSearchId);
 
-        if (++index == rowsProfile.keySet().size()){
+        if (++index == rowsProfile.keySet().size()) {
             rowsProfile.get(id).setSearch(0L);
             return;
         }
 
         Long nextSearchId = (Long) Ids.get(index);
-        if(nextSearchId.equals(id)){
-            if (++index == rowsProfile.keySet().size()){
+        if (nextSearchId.equals(id)) {
+            if (++index == rowsProfile.keySet().size()) {
                 rowsProfile.get(id).setSearch(0L);
                 return;
             }
@@ -94,30 +126,22 @@ public class RowProfile {
         rowsProfile.get(id).setSearch(nextSearchId);
     }
 
-    public Long getSearchId(Long id) {
-        return rowsProfile.get(id).getSearch();
-    }
-
-    public Long getLoveId(Long id) {
-        return rowsProfile.get(id).getLovers();
-    }
-
-    private void setLoveId(Long id, Long loverId) {
-        getProfileById(id).setLovers(loverId);
-    }
-
-    public Long incrementedLoversId(Long id) {
-        Long loverId = getLoveId(id);
-        loverId = rowLoveRelation.getNextLoverId(id, loverId);
-        setLoveId(id, loverId);
+    public Long incrementedLoversIdForId(Long id) {
+        if (rowLoveRelation.isIdHasNoRelations(id)) {
+            return null;
+        }
+        Long loverId = rowLoveRelation.getNextLoverId(id, getLoverIdById(id));
+        setLoverIdById(id, loverId);
 
         return loverId;
     }
 
-    public Long decrementedLoversId(Long id) {
-        Long loverId = getLoveId(id);
-        loverId = rowLoveRelation.getPrevLoverId(id, loverId);
-        setLoveId(id, loverId);
+    public Long decrementedLoversIdForId(Long id) {
+        if (rowLoveRelation.isIdHasNoRelations(id)) {
+            return null;
+        }
+        Long loverId = rowLoveRelation.getPrevLoverId(id, getLoverIdById(id));
+        setLoverIdById(id, loverId);
 
         return loverId;
     }

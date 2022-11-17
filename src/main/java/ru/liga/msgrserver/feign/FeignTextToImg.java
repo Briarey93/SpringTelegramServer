@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "text-to-image-service",
-        url="${feign.img.url}",
+        url = "${feign.img.url}",
         decode404 = true)
 public interface FeignTextToImg {
 
